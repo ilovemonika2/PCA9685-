@@ -1,0 +1,48 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+// Define joystick pins
+const int joy1X = A0;
+const int joy1Y = A1;
+
+// Define servo channels
+const int servo1 = 0; // Servo 1 on channel 0
+const int servo2 = 1; // Servo 2 on channel 1
+
+// Define servo motion range
+const int servoMin = 500;  // Leftmost position
+const int servoMax = 2500; // Rightmost position
+
+void setup() {
+  Serial.begin(9600); // Start serial communication
+  pwm.begin();
+  pwm.setPWMFreq(60); // Set frequency for servos
+}
+
+void loop() {
+  // Read joystick values
+  int joyXVal = analogRead(joy1X);
+  int joyYVal = analogRead(joy1Y);
+
+  // Map joystick values to servo positions
+  int servo1Pos = map(joyXVal, 0, 1023, servoMin, servoMax);
+  int servo2Pos = map(joyYVal, 0, 1023, servoMin, servoMax);
+
+  // Move the servos to the positions
+  pwm.writeMicroseconds(servo1, servo1Pos);
+  pwm.writeMicroseconds(servo2, servo2Pos);
+
+  // Print joystick values and servo positions for debugging
+  Serial.print("Joystick X: ");
+  Serial.print(joyXVal);
+  Serial.print("  Joystick Y: ");
+  Serial.print(joyYVal);
+  Serial.print("  Servo 1: ");
+  Serial.print(servo1Pos);
+  Serial.print("  Servo 2: ");
+  Serial.println(servo2Pos);
+
+  delay(50); // Small delay for stability
+}
