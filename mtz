@@ -1,0 +1,54 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+// Define joystick pins
+const int joy1X = A0;
+const int joy1Y = A1;
+
+// Define servo channels
+const int servo1 = 0; 
+const int servo2 = 1; 
+
+// Define servo motion range in microseconds
+const int servoMin = 500;  // Corresponds to one end of servo travel
+const int servoMax = 2500; // Corresponds to the other end
+
+void setup() {
+  Serial.begin(9600);
+  pwm.begin();
+  pwm.setPWMFreq(60); // Analog servos run at ~60 Hz
+}
+
+void loop() {
+  // Read joystick values
+  int joyXVal = analogRead(joy1X);
+  int joyYVal = analogRead(joy1Y);
+
+  // Map joystick values to pulse lengths (in microseconds)
+  int servo1Pulse = map(joyXVal, 0, 1023, servoMin, servoMax);
+  int servo2Pulse = map(joyYVal, 0, 1023, servoMin, servoMax);
+
+  // Convert microseconds to PCA9685 steps
+  uint16_t servo1Steps = (uint16_t)map(servo1Pulse, 0, 20000, 0, 4095); // Assuming ~20ms period at 60Hz
+  uint16_t servo2Steps = (uint16_t)map(servo2Pulse, 0, 20000, 0, 4095); // Same mapping
+
+  // Set the servos using setPWM(channel, onStep, offStep)
+  // 'on' is typically 0, and 'off' is the calculated step count
+  pwm.setPWM(servo1, 0, servo1Steps);
+  pwm.setPWM(servo2, 0, servo2Steps);
+
+  // Print debug info
+  Serial.print("Joystick X: ");
+  Serial.print(joyXVal);
+  Serial.print("  Joystick Y: ");
+  Serial.print(joyYVal);
+  Serial.print("  Servo 1 pulse: ");
+  Serial.print(servo1Pulse);
+  Serial.print("µs  Servo 2 pulse: ");
+  Serial.print(servo2Pulse);
+  Serial.println("µs");
+
+  delay(50);
+}
